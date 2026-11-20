@@ -50,9 +50,15 @@ export interface StoryPart {
 
 // Lista de modelos gratuitos por provedor
 export const FREE_MODELS = {
-  mistral: [
-    'mimo-v2.6-flash:free',
-    'deepseek-v4.1-flash:free'
+  ollama: [
+    'llama2',
+    'mistral',
+    'phi',
+    'gemma',
+    'llama2:7b',
+    'mistral:7b',
+    'phi:latest',
+    'gemma:7b'
   ],
   lmstudio: [
     'lms-sk-X384l750YhR1-yOSnua9NnTM4_H8EU7dRo3WCMB7X0Q'
@@ -71,7 +77,7 @@ export const FREE_MODELS = {
 
 // Todos os modelos gratuitos
 export const ALL_FREE_MODELS = [
-  ...FREE_MODELS.mistral,
+  ...FREE_MODELS.ollama,
   ...FREE_MODELS.lmstudio,
   ...FREE_MODELS.huggingface,
   ...FREE_MODELS.openrouter

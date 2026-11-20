@@ -2,18 +2,24 @@ import Mistral from '@mistralai/mistralai';
 import { StoryRequest, StoryResponse, ModelType, StoryPart, FREE_MODELS } from '../types';
 import { CONFIG } from '../config';
 
-const API_KEY = CONFIG.mistralApiKey;
+// Chaves de API
+const OLLAMA_API_KEY = process.env.OLLAMA_API_KEY || 'caef2eacfafa47fe9f82d1b46020db2f.MjET7I2r_GvlKyyO-lxZjFgw';
 const HUGGINGFACE_API_KEY = process.env.HUGGINGFACE_API_KEY || '';
 
-// Clientes para diferentes provedores
-const mistralClient = new Mistral({ apiKey: API_KEY });
+// Cliente Mistral (opcional, caso queira usar)
+const mistralClient = CONFIG.mistralApiKey ? new Mistral({ apiKey: CONFIG.mistralApiKey }) : null;
 
 // Mapeamento de modelos para diferentes provedores
 const MODEL_PROVIDERS: Record<string, string> = {
-  // Mistral AI
-  'mimo-v2.6-flash:free': 'mistral',
-  'deepseek-v4.1-flash:free': 'mistral',
-  'mistral-7b-instruct': 'mistral',
+  // Ollama (Local)
+  'llama2': 'ollama',
+  'mistral': 'ollama',
+  'phi': 'ollama',
+  'gemma': 'ollama',
+  'llama2:7b': 'ollama',
+  'mistral:7b': 'ollama',
+  'phi:latest': 'ollama',
+  'gemma:7b': 'ollama',
   
   // LM Studio (local)
   'lms-sk-X384l750YhR1-yOSnua9NnTM4_H8EU7dRo3WCMB7X0Q': 'lmstudio',
@@ -30,13 +36,14 @@ const MODEL_PROVIDERS: Record<string, string> = {
 };
 
 const getModelConfig = (model: ModelType) => {
-  const provider = MODEL_PROVIDERS[model] || 'mistral';
+  const provider = MODEL_PROVIDERS[model] || 'ollama';
   
   switch (provider) {
-    case 'mistral':
+    case 'ollama':
       return {
         model: model,
-        temperature: model.includes('adult') || model.includes('deepseek') ? 0.8 : 0.7
+        temperature: 0.8,
+        baseUrl: 'http://localhost:11434/api'
       };
     case 'lmstudio':
       return {
@@ -137,7 +144,7 @@ export const generateStory = async (request: StoryRequest): Promise<StoryRespons
   const { anime, protagonists, mode, model, includeActs = false, continueStory = false, previousParts = [] } = request;
   
   const modelConfig = getModelConfig(model);
-  const provider = MODEL_PROVIDERS[model] || 'mistral';
+  const provider = MODEL_PROVIDERS[model] || 'ollama';
   
   const protagonistsInfo = protagonists.map(p => 
     `Nome: ${p.name}, Descrição: ${p.description}, Personalidade: ${p.personality}`
@@ -214,8 +221,32 @@ Instrução: Reescreva a história do anime incluindo todos os novos protagonist
   }
 
   try {
-    // Para LM Studio, usar API local
-    if (provider === 'lmstudio') {
+    // Para Ollama
+    if (provider === 'ollama') {
+      const response = await fetch(`${modelConfig.baseUrl}/generate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${OLLAMA_API_KEY}`
+        },
+        body: JSON.stringify({
+          model: model,
+          prompt: userPrompt,
+          temperature: modelConfig.temperature,
+          max_tokens: 2000
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Ollama API error: ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      const story = data.response || '';
+      return { story };
+    }
+    // Para LM Studio
+    else if (provider === 'lmstudio') {
       const response = await fetch(`${modelConfig.baseUrl}/chat/completions`, {
         method: 'POST',
         headers: {
@@ -263,7 +294,6 @@ Instrução: Reescreva a história do anime incluindo todos os novos protagonist
       }
       
       const data = await response.json();
-      // Hugging Face retorna o texto em data[0].generated_text
       const story = data[0]?.generated_text || data.generated_text || '';
       return { story };
     }
@@ -272,7 +302,7 @@ Instrução: Reescreva a história do anime incluindo todos os novos protagonist
       const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY || API_KEY}`,
+          'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY || ''}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
@@ -294,8 +324,8 @@ Instrução: Reescreva a história do anime incluindo todos os novos protagonist
       const story = data.choices?.[0]?.message?.content || '';
       return { story };
     }
-    // Para Mistral (padrão)
-    else {
+    // Para Mistral (apenas se tiver chave)
+    else if (mistralClient) {
       const response = await mistralClient.chat.complete({
         ...modelConfig,
         messages: [
@@ -315,6 +345,9 @@ Instrução: Reescreva a história do anime incluindo todos os novos protagonist
       }
 
       return { story };
+    }
+    else {
+      throw new Error('Nenhum provedor disponível. Configure uma API key ou use Ollama/LM Studio local.');
     }
   } catch (error) {
     console.error('Error generating story:', error);

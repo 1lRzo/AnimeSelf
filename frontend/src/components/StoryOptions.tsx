@@ -44,9 +44,15 @@ const StoryOptions = ({
 
   // Modelos com labels amigáveis
   const modelLabels: Record<string, string> = {
-    // Mistral AI
-    'mimo-v2.6-flash:free': 'Mimo v2.6 (Mistral)',
-    'deepseek-v4.1-flash:free': 'DeepSeek v4.1 (Mistral)',
+    // Ollama
+    'llama2': 'Llama 2 (Ollama - Local)',
+    'mistral': 'Mistral (Ollama - Local)',
+    'phi': 'Phi (Ollama - Local)',
+    'gemma': 'Gemma (Ollama - Local)',
+    'llama2:7b': 'Llama 2 7B (Ollama - Local)',
+    'mistral:7b': 'Mistral 7B (Ollama - Local)',
+    'phi:latest': 'Phi Latest (Ollama - Local)',
+    'gemma:7b': 'Gemma 7B (Ollama - Local)',
     
     // LM Studio
     'lms-sk-X384l750YhR1-yOSnua9NnTM4_H8EU7dRo3WCMB7X0Q': 'LM Studio (Local)',
@@ -121,10 +127,10 @@ const StoryOptions = ({
       <div className="option-group">
         <label>Modelo de IA (Provedor)</label>
         
-        {/* Provedores organizados */}
+        {/* Provedor: Ollama */}
         <div style={{ marginBottom: '10px' }}>
           <strong style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
-            Mistral AI
+            🟢 Ollama (Local - Recomendado)
           </strong>
           <select
             value={model}
@@ -132,17 +138,21 @@ const StoryOptions = ({
             className="select-input"
             style={{ width: '100%', margin: '5px 0' }}
           >
-            {FREE_MODELS.mistral.map((modelOption) => (
+            {FREE_MODELS.ollama.map((modelOption) => (
               <option key={modelOption} value={modelOption}>
                 {modelLabels[modelOption] || modelOption}
               </option>
             ))}
           </select>
+          <small style={{ color: 'var(--text-tertiary)', fontSize: '0.75rem' }}>
+            ⚡ Usa sua chave: caef2eacfafa47fe9f82d1b46020db2f.MjET7I2r_GvlKyyO-lxZjFgw
+          </small>
         </div>
 
+        {/* Provedor: LM Studio */}
         <div style={{ marginBottom: '10px' }}>
           <strong style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
-            LM Studio (Local)
+            🟣 LM Studio (Local)
           </strong>
           <select
             value={model}
@@ -163,9 +173,10 @@ const StoryOptions = ({
           )}
         </div>
 
+        {/* Provedor: Hugging Face */}
         <div style={{ marginBottom: '10px' }}>
           <strong style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
-            Hugging Face
+            🟡 Hugging Face
           </strong>
           <select
             value={model}
@@ -186,9 +197,10 @@ const StoryOptions = ({
           )}
         </div>
 
+        {/* Provedor: OpenRouter */}
         <div style={{ marginBottom: '10px' }}>
           <strong style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
-            OpenRouter
+            🔵 OpenRouter
           </strong>
           <select
             value={model}
