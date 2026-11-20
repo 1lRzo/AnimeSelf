@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anime Story Maker</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Anime Story Maker</h1>
+            <p class="subtitle">Crie sua própria versão do anime</p>
+        </header>
+
+        <main>
+            <!-- Seção de Pesquisa -->
+            <section class="search-section">
+                <div class="search-box">
+                    <input type="text" id="anime-search" placeholder="Pesquisar anime (ex: Naruto, One Piece, Attack on Titan)...">
+                    <button id="search-btn">🔍</button>
+                </div>
+                <div class="filter-options">
+                    <label>
+                        <input type="checkbox" id="show-all"> Mostrar todos
+                    </label>
+                    <label>
+                        <input type="checkbox" id="filter-hentai"> Hentai
+                    </label>
+                    <label>
+                        <input type="checkbox" id="filter-famous"> Famosos
+                    </label>
+                </div>
+            </section>
+
+            <!-- Resultados da Pesquisa -->
+            <section class="results-section" id="results">
+                <h2>Resultados</h2>
+                <div class="anime-grid" id="anime-grid">
+                    <!-- Animes serão inseridos aqui -->
+                </div>
+            </section>
+
+            <!-- Modal de Edição -->
+            <div class="modal-overlay" id="edit-modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2 id="selected-anime-title">Anime Selecionado</h2>
+                        <button class="close-btn" id="close-modal">×</button>
+                    </div>
+                    
+                    <div class="modal-body">
+                        <div class="original-info">
+                            <img id="selected-anime-img" src="" alt="">
+                            <div class="original-details">
+                                <p><strong>Sinopse:</strong> <span id="selected-anime-synopsis"></span></p>
+                                <p><strong>Protagonista Original:</strong> <span id="original-protagonist"></span></p>
+                            </div>
+                        </div>
+
+                        <div class="edit-options">
+                            <div class="protagonists-section">
+                                <h3>Adicionar Protagonistas</h3>
+                                <div class="protagonist-input">
+                                    <input type="text" id="new-protagonist" placeholder="Nome do protagonista">
+                                    <button id="add-protagonist-btn">+</button>
+                                </div>
+                                <div class="protagonists-list" id="protagonists-list">
+                                    <!-- Protagonistas adicionados aparecerão aqui -->
+                                </div>
+                            </div>
+
+                            <div class="settings-section">
+                                <h3>Configurações</h3>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="adult-content-toggle">
+                                    <span class="slider"></span>
+                                    <span class="toggle-label">Conteúdo +18 (Sexo e Comédia)</span>
+                                </label>
+                                <div class="intensity-slider">
+                                    <label for="comedy-intensity">Intensidade da Comédia:</label>
+                                    <input type="range" id="comedy-intensity" min="1" max="10" value="5">
+                                    <span id="comedy-value">5</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" id="cancel-btn">Cancelar</button>
+                        <button class="btn btn-primary" id="generate-btn">Gerar História</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Seção de História Gerada -->
+            <section class="story-section" id="story-section" style="display: none;">
+                <h2>Sua História Personalizada</h2>
+                <div class="story-header">
+                    <h3 id="story-title"></h3>
+                    <div class="story-meta">
+                        <span class="rating" id="story-rating"></span>
+                        <span class="protagonists-count" id="protagonists-count"></span>
+                    </div>
+                </div>
+                <div class="story-content" id="story-content">
+                    <!-- História gerada aparecerá aqui -->
+                </div>
+                <div class="story-actions">
+                    <button class="btn btn-secondary" id="back-to-edit">Editar Novamente</button>
+                    <button class="btn btn-primary" id="save-story">Salvar História</button>
+                    <button class="btn btn-share" id="share-story">Compartilhar</button>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>Criado para diversão - Todos os direitos dos animes para seus respectivos donos</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,160 +1,94 @@
-# AnimeSelf
+# Anime Story Maker
 
-## 🎬 Sobre o Projeto
+Um site minimalista para criar histórias personalizadas de animes.
 
-AnimeSelf é um aplicativo web que permite reformular histórias de anime para incluir você e seus amigos como protagonistas. Você pode:
+## Funcionalidades
 
-- Pesquisar qualquer anime (inclusive +18)
-- Adicionar múltiplos protagonistas personalizados
-- Escolher entre diferentes modos de história:
-  - **Original**: Mantém a história fiel ao anime, apenas adicionando os novos personagens
-  - **Comédia**: Transforma a história em uma comédia
-  - **+18**: Inclui cenas adultas e explícitas com atos detalhados
-- Alternar entre modelos de IA (mimo-v2.6-flash:free e deepseek-v4.1-flash:free)
+- 🔍 **Pesquisa de animes**: Encontre seus animes favoritos, incluindo hentai, animes famosos e muito mais
+- 🎭 **Substituição de protagonistas**: Adicione um ou mais protagonistas para substituir o personagem principal
+- 👥 **Histórias com amigos**: Crie uma história onde seus amigos (protagonistas adicionados) substituem o protagonista original
+- 🔞 **+18 Mode**: Ative o modo adulto para incluir cenas de sexo e comédia em sua história
+- 🎨 **Controle de intensidade**: Ajuste o nível de comédia da história
+- 💾 **Salvar histórias**: Salve suas criações no navegador
+- 📤 **Compartilhar**: Compartilhe suas histórias com amigos
 
-## ⚠️ Aviso Importante
+## Como usar
 
-Este site **NÃO** é adequado para menores de 18 anos. Ao usar o AnimeSelf, você declara que tem mais de 18 anos e aceita que todo o conteúdo gerado é fictício.
+1. **Pesquise um anime**: Digite o nome do anime na barra de pesquisa
+2. **Selecione um anime**: Clique no card do anime desejado
+3. **Adicione protagonistas**: Insira os nomes dos seus amigos ou personagens que irão substituir o protagonista
+4. **Configure as opções**: 
+   - Ative o toggle **+18** para conteúdo adulto
+   - Ajuste a intensidade da comédia
+5. **Gere a história**: Clique em "Gerar História"
+6. **Salve ou compartilhe**: Salve sua criação ou compartilhe com amigos
 
-## 🚀 Como Rodar
-
-### Pré-requisitos
-
-- Node.js 18+ 
-- npm ou yarn
-- Chave de API da Mistral (opcional para testar localmente)
-
-### Instalação
-
-1. Clone o repositório:
-```bash
-git clone <url-do-repositorio>
-cd AnimeSelf
-```
-
-2. Instale as dependências:
-```bash
-npm install
-```
-
-3. Configure o backend:
-```bash
-cd backend
-cp .env.example .env
-# Edite o .env com sua chave da Mistral API
-```
-
-4. Inicie o backend:
-```bash
-npm run dev
-```
-
-5. Em outro terminal, inicie o frontend:
-```bash
-cd ../frontend
-npm run dev
-```
-
-6. Acesse http://localhost:3000 no seu navegador
-
-## 📁 Estrutura do Projeto
+## Estrutura do Projeto
 
 ```
-AnimeSelf/
-├── frontend/          # React + TypeScript
-│   ├── src/
-│   │   ├── components/ # Componentes React
-│   │   ├── hooks/      # Hooks personalizados
-│   │   ├── types/      # Tipos TypeScript
-│   │   └── ...
-│   └── package.json
-├── backend/           # Node.js + Express
-│   ├── src/
-│   │   ├── routes/     # Rotas da API
-│   │   ├── services/   # Serviços (Mistral, Jikan)
-│   │   └── ...
-│   └── package.json
-└── README.md
+anime-story-maker/
+├── index.html    # Estrutura principal do site
+├── style.css     # Estilos minimalistas
+├── script.js     # Lógica da aplicação
+└── README.md     # Este arquivo
 ```
 
-## 🎯 Funcionalidades
+## Tecnologias Utilizadas
 
-### Frontend
-- Pesquisa de animes com filtro por rating
-- Seleção de anime
-- Adição/remoção de protagonistas
-- Escolha de modo de história
-- Seleção de modelo de IA
-- Visualização da história gerada
-- Aviso de conteúdo adulto
+- HTML5
+- CSS3 (com variáveis CSS e Flexbox/Grid)
+- JavaScript (Vanilla JS)
+- LocalStorage para salvar histórias
+- Web Share API para compartilhamento
 
-### Backend
-- API REST com Express
-- Integração com Jikan API (pesquisa de animes)
-- Integração com Mistral AI SDK
-- Geração de histórias com diferentes modos
-- Suporte a múltiplos modelos
+## Animes Incluídos
 
-## 🔧 Tecnologias
+O site vem com uma base de dados pré-definida contendo:
+- Animes famosos (Naruto, One Piece, Attack on Titan, etc.)
+- Hentais (Boku no Pico, Emergence, Bible Black, etc.)
+- Outros animes populares
 
-### Frontend
-- React 18
-- TypeScript
-- Vite
-- CSS Puro (sem frameworks)
+## Personalização
 
-### Backend
-- Node.js
-- Express
-- @mistralai/mistralai (SDK oficial)
-- Axios (para requisições HTTP)
-- CORS
+Você pode facilmente adicionar mais animes editando o array `animeDatabase` no arquivo `script.js`:
 
-### APIs Externas
-- [Jikan API](https://jikan.moe/) - Dados de animes
-- [Mistral AI](https://mistral.ai/) - Geração de histórias
+```javascript
+const animeDatabase = [
+    {
+        id: 1,
+        title: "Novo Anime",
+        image: "URL_DA_IMAGEM",
+        synopsis: "Descrição do anime...",
+        protagonist: "Protagonista Original",
+        tags: ["tag1", "tag2"],
+        genre: "Gênero"
+    },
+    // ...
+];
+```
 
-## 📝 Tipos de Conteúdo
+## Deploy
 
-O AnimeSelf acessa **todos** os animes disponíveis na Jikan API, incluindo:
-- G - Todas as idades
-- PG - Crianças
-- PG-13 - Adolescentes
-- R - 17+
-- R18 - Adultos
-- Rx - Hentai
+Para hospedar este site:
 
-## 🎭 Modos de História
+1. **GitHub Pages**: 
+   - Crie um repositório no GitHub
+   - Faça upload dos arquivos
+   - Ative o GitHub Pages nas configurações
 
-### Original
-Mantém a essência do anime original, apenas adicionando seus amigos como personagens.
+2. **Netlify/Vercel**:
+   - Faça upload dos arquivos
+   - O site será deployado automaticamente
 
-### Comédia
-Transforma a história em uma comédia com situações engraçadas e diálogos cômicos.
+3. **Servidor local**:
+   - Basta abrir o `index.html` em um navegador
 
-### +18
-Reescreve a história com cenas adultas e explícitas. Quando ativado, a história é dividida em atos com descrições detalhadas.
+## Observações
 
-## ⚡ Modelos Disponíveis
+- Este site é apenas para fins de diversão e entretenimento
+- Todos os direitos dos animes pertence aos seus respectivos donos
+- O conteúdo +18 é opcional e pode ser desativado
 
-- `mimo-v2.6-flash:free` - Modelo rápido e eficiente
-- `deepseek-v4.1-flash:free` - Modelo alternativo
+## Autor
 
-## 🔒 Segurança
-
-- Aviso de conteúdo adulto na tela inicial
-- Filtro por rating na pesquisa
-- Nenhum dado pessoal é armazenado
-- Todas as requisições são feitas pelo cliente
-
-## 📄 Licença
-
-MIT
-
-## 🤝 Contribuição
-
-Contribuições são bem-vindas! Sinta-se à vontade para abrir issues e pull requests.
-
-## 📬 Contato
-
-Para dúvidas ou sugestões, abra uma issue no repositório.
+Criado como um projeto de diversão para gerar histórias personalizadas de animes.
