@@ -1,19 +1,54 @@
 import Mistral from '@mistralai/mistralai';
-import { StoryRequest, StoryResponse, ModelType, StoryPart } from '../types';
+import { StoryRequest, StoryResponse, ModelType, StoryPart, FREE_MODELS } from '../types';
 import { CONFIG } from '../config';
 
 const API_KEY = CONFIG.mistralApiKey;
 
-const client = new Mistral({ apiKey: API_KEY });
+// Clientes para diferentes provedores
+const mistralClient = new Mistral({ apiKey: API_KEY });
+
+// Mapeamento de modelos para diferentes provedores
+const MODEL_PROVIDERS: Record<string, string> = {
+  // Mistral AI
+  'mimo-v2.6-flash:free': 'mistral',
+  'deepseek-v4.1-flash:free': 'mistral',
+  'mistral-7b-instruct': 'mistral',
+  
+  // LM Studio (local)
+  'lms-sk-X384l750YhR1-yOSnua9NnTM4_H8EU7dRo3WCMB7X0Q': 'lmstudio',
+  
+  // Outros modelos
+  'llama-2-7b-chat': 'openrouter',
+  'phi-2': 'openrouter'
+};
 
 const getModelConfig = (model: ModelType) => {
-  switch (model) {
-    case 'mimo-v2.6-flash:free':
-      return { model: 'mimo-v2.6-flash:free', temperature: 0.7 };
-    case 'deepseek-v4.1-flash:free':
-      return { model: 'deepseek-v4.1-flash:free', temperature: 0.8 };
+  const provider = MODEL_PROVIDERS[model] || 'mistral';
+  
+  switch (provider) {
+    case 'mistral':
+      return {
+        model: model,
+        temperature: model.includes('adult') || model.includes('deepseek') ? 0.8 : 0.7
+      };
+    case 'lmstudio':
+      // LM Studio usa API local
+      return {
+        model: model,
+        temperature: 0.8,
+        baseUrl: 'http://localhost:1234/v1'  // URL padrão do LM Studio
+      };
+    case 'openrouter':
+      return {
+        model: model,
+        temperature: 0.8,
+        baseUrl: 'https://openrouter.ai/api/v1'
+      };
     default:
-      return { model: 'mimo-v2.6-flash:free', temperature: 0.7 };
+      return {
+        model: model,
+        temperature: 0.7
+      };
   }
 };
 
@@ -86,10 +121,12 @@ const formatStoryParts = (story: string): StoryPart[] => {
   return parts;
 };
 
+// Função para gerar história usando diferentes provedores
 export const generateStory = async (request: StoryRequest): Promise<StoryResponse> => {
   const { anime, protagonists, mode, model, includeActs = false, continueStory = false, previousParts = [] } = request;
   
   const modelConfig = getModelConfig(model);
+  const provider = MODEL_PROVIDERS[model] || 'mistral';
   
   const protagonistsInfo = protagonists.map(p => 
     `Nome: ${p.name}, Descrição: ${p.description}, Personalidade: ${p.personality}`
@@ -166,25 +203,81 @@ Instrução: Reescreva a história do anime incluindo todos os novos protagonist
   }
 
   try {
-    const response = await client.chat.complete({
-      ...modelConfig,
-      messages: [
-        { role: 'system', content: ADULT_SYSTEM_PROMPT },
-        { role: 'user', content: userPrompt }
-      ]
-    });
-
-    const story = response.choices[0].message.content;
-    
-    if (includeActs && mode === 'adult') {
-      const acts = formatActs(story);
-      return {
-        story,
-        acts
-      };
+    // Para LM Studio, usar API local
+    if (provider === 'lmstudio') {
+      const response = await fetch(`${modelConfig.baseUrl}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: model,
+          messages: [
+            { role: 'system', content: ADULT_SYSTEM_PROMPT },
+            { role: 'user', content: userPrompt }
+          ],
+          temperature: modelConfig.temperature,
+          max_tokens: 2000
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error(`LM Studio API error: ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      const story = data.choices?.[0]?.message?.content || data.choices?.[0]?.text || '';
+      return { story };
     }
+    // Para OpenRouter
+    else if (provider === 'openrouter') {
+      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY || API_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: model,
+          messages: [
+            { role: 'system', content: ADULT_SYSTEM_PROMPT },
+            { role: 'user', content: userPrompt }
+          ],
+          temperature: modelConfig.temperature,
+          max_tokens: 2000
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error(`OpenRouter API error: ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      const story = data.choices?.[0]?.message?.content || '';
+      return { story };
+    }
+    // Para Mistral (padrão)
+    else {
+      const response = await mistralClient.chat.complete({
+        ...modelConfig,
+        messages: [
+          { role: 'system', content: ADULT_SYSTEM_PROMPT },
+          { role: 'user', content: userPrompt }
+        ]
+      });
 
-    return { story };
+      const story = response.choices[0].message.content;
+      
+      if (includeActs && mode === 'adult') {
+        const acts = formatActs(story);
+        return {
+          story,
+          acts
+        };
+      }
+
+      return { story };
+    }
   } catch (error) {
     console.error('Error generating story:', error);
     throw new Error('Falha ao gerar a história. Tente novamente.');
@@ -192,5 +285,5 @@ Instrução: Reescreva a história do anime incluindo todos os novos protagonist
 };
 
 export const listModels = async (): Promise<ModelType[]> => {
-  return CONFIG.defaultModels as ModelType[];
+  return FREE_MODELS;
 };

@@ -37,9 +37,26 @@ export interface Protagonist {
   personality: string;
 }
 
-export type StoryMode = 'original' | 'comedy' | 'adult';
+export interface StoryPart {
+  id: string;
+  content: string;
+  isAdult?: boolean;
+  actNumber?: number;
+}
 
-export type ModelType = 'mimo-v2.6-flash:free' | 'deepseek-v4.1-flash:free';
+// Lista de modelos gratuitos
+export const FREE_MODELS = [
+  'mimo-v2.6-flash:free',
+  'deepseek-v4.1-flash:free',
+  'lms-sk-X384l750YhR1-yOSnua9NnTM4_H8EU7dRo3WCMB7X0Q',
+  'mistral-7b-instruct',
+  'llama-2-7b-chat',
+  'phi-2'
+] as const;
+
+export type ModelType = typeof FREE_MODELS[number] | string;
+
+export type StoryMode = 'original' | 'comedy' | 'adult';
 
 export interface StoryRequest {
   anime: Anime;
@@ -51,17 +68,9 @@ export interface StoryRequest {
   continueStory?: boolean;
 }
 
-export interface StoryPart {
-  id: string;
-  content: string;
-  isAdult?: boolean;
-  actNumber?: number;
-}
-
 export interface StoryResponse {
   story: string;
   acts?: string[];
-  parts?: StoryPart[];
 }
 
 export interface SearchParams {

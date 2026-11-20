@@ -48,8 +48,26 @@ export interface StoryPart {
   actNumber?: number;
 }
 
+// Lista de modelos gratuitos disponíveis
+export type ModelType = 
+  | 'mimo-v2.6-flash:free'
+  | 'deepseek-v4.1-flash:free'
+  | 'lms-sk-X384l750YhR1-yOSnua9NnTM4_H8EU7dRo3WCMB7X0Q'  // LM Studio
+  | 'mistral-7b-instruct'
+  | 'llama-2-7b-chat'
+  | 'phi-2'
+  | string;  // Permite modelos customizados
+
+export const FREE_MODELS: ModelType[] = [
+  'mimo-v2.6-flash:free',
+  'deepseek-v4.1-flash:free',
+  'lms-sk-X384l750YhR1-yOSnua9NnTM4_H8EU7dRo3WCMB7X0Q',
+  'mistral-7b-instruct',
+  'llama-2-7b-chat',
+  'phi-2'
+];
+
 export type StoryMode = 'original' | 'comedy' | 'adult';
-export type ModelType = 'mimo-v2.6-flash:free' | 'deepseek-v4.1-flash:free';
 
 export interface StoryRequest {
   anime: Anime;

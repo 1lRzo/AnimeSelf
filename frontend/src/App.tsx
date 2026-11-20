@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Anime, Protagonist, StoryMode, ModelType, StoryRequest, StoryResponse, StoryPart } from './types';
+import { Anime, Protagonist, StoryMode, ModelType, StoryRequest, StoryResponse, StoryPart, FREE_MODELS } from './types';
 import AnimeSearch from './components/AnimeSearch';
 import ProtagonistList from './components/ProtagonistList';
 import StoryOptions from './components/StoryOptions';
@@ -21,16 +21,16 @@ const App = () => {
   const [isContinuing, setIsContinuing] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [availableModels, setAvailableModels] = useState<ModelType[]>([]);
+  const [availableModels, setAvailableModels] = useState<ModelType[]>(FREE_MODELS);
 
   useEffect(() => {
     const fetchModels = async () => {
       try {
         const response = await fetch('/api/story/models');
         const data = await response.json();
-        setAvailableModels(data.models || ['mimo-v2.6-flash:free', 'deepseek-v4.1-flash:free']);
+        setAvailableModels(data.models || FREE_MODELS);
       } catch (err) {
-        setAvailableModels(['mimo-v2.6-flash:free', 'deepseek-v4.1-flash:free']);
+        setAvailableModels(FREE_MODELS);
       }
     };
     fetchModels();
@@ -94,7 +94,6 @@ const App = () => {
       const data: StoryResponse = await response.json();
       
       if (continueStory) {
-        // Adicionar nova parte à lista
         const newPart: StoryPart = {
           id: Date.now().toString(),
           content: data.story,
@@ -104,7 +103,6 @@ const App = () => {
         setStoryParts([...storyParts, newPart]);
         setCurrentPartIndex(storyParts.length);
       } else {
-        // Nova história
         const firstPart: StoryPart = {
           id: Date.now().toString(),
           content: data.story,
@@ -126,7 +124,6 @@ const App = () => {
     if (currentPartIndex < storyParts.length - 1) {
       setCurrentPartIndex(currentPartIndex + 1);
     } else {
-      // Gerar próxima parte
       setIsContinuing(true);
       handleGenerateStory(true);
     }
@@ -204,20 +201,6 @@ const App = () => {
         <main className="content-area">
           <div className="content-header">
             <h2>História Gerada</h2>
-            <div className="model-selector">
-              <label>Modelo:</label>
-              <select
-                value={selectedModel}
-                onChange={(e) => setSelectedModel(e.target.value as ModelType)}
-                className="select-input"
-              >
-                {availableModels.map(model => (
-                  <option key={model} value={model}>
-                    {model}
-                  </option>
-                ))}
-              </select>
-            </div>
           </div>
           
           <StoryDisplay
