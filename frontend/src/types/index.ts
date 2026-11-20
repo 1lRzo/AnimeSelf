@@ -47,11 +47,21 @@ export interface StoryRequest {
   mode: StoryMode;
   model: ModelType;
   includeActs?: boolean;
+  previousParts?: StoryPart[];
+  continueStory?: boolean;
+}
+
+export interface StoryPart {
+  id: string;
+  content: string;
+  isAdult?: boolean;
+  actNumber?: number;
 }
 
 export interface StoryResponse {
   story: string;
   acts?: string[];
+  parts?: StoryPart[];
 }
 
 export interface SearchParams {

@@ -1,4 +1,4 @@
-import { StoryResponse, Anime, Protagonist, StoryMode } from '../types';
+import { StoryResponse, Anime, Protagonist, StoryMode, StoryPart } from '../types';
 
 interface StoryDisplayProps {
   story: StoryResponse | null;
@@ -6,9 +6,19 @@ interface StoryDisplayProps {
   anime: Anime | null;
   protagonists: Protagonist[];
   mode: StoryMode;
+  storyParts?: StoryPart[];
+  currentPartIndex?: number;
 }
 
-const StoryDisplay = ({ story, isLoading, anime, protagonists, mode }: StoryDisplayProps) => {
+const StoryDisplay = ({ 
+  story, 
+  isLoading, 
+  anime, 
+  protagonists, 
+  mode,
+  storyParts,
+  currentPartIndex = 0 
+}: StoryDisplayProps) => {
   const getModeLabel = () => {
     switch (mode) {
       case 'original': return 'Original';
@@ -24,6 +34,13 @@ const StoryDisplay = ({ story, isLoading, anime, protagonists, mode }: StoryDisp
     ));
   };
 
+  const displayStory = storyParts && storyParts.length > 0
+    ? storyParts[currentPartIndex]?.content || ''
+    : story?.story || '';
+
+  const hasMultipleParts = storyParts && storyParts.length > 1;
+  const currentPart = storyParts ? storyParts[currentPartIndex] : null;
+
   if (isLoading) {
     return (
       <div className="story-container">
@@ -35,7 +52,7 @@ const StoryDisplay = ({ story, isLoading, anime, protagonists, mode }: StoryDisp
     );
   }
 
-  if (!story && !isLoading) {
+  if (!story && !isLoading && (!storyParts || storyParts.length === 0)) {
     return (
       <div className="story-container">
         <div className="empty-state">
@@ -52,34 +69,42 @@ const StoryDisplay = ({ story, isLoading, anime, protagonists, mode }: StoryDisp
         <h3>
           {anime?.title} - {getModeLabel()}
         </h3>
-        <div style={{ 
+        <div style={{
           display: 'flex', 
           gap: '10px', 
           flexWrap: 'wrap',
           marginTop: '10px'
         }}>
-          <span style={{ 
+          <span style={{
             fontSize: '0.85rem', 
             color: 'var(--text-tertiary)'
           }}>
             {protagonists.length} protagonista(s)
           </span>
           {mode === 'adult' && (
-            <span style={{ 
+            <span style={{
               fontSize: '0.85rem', 
               color: 'var(--accent)'
             }}>
               ✓ Conteúdo +18
             </span>
           )}
+          {hasMultipleParts && (
+            <span style={{
+              fontSize: '0.85rem', 
+              color: 'var(--text-secondary)'
+            }}>
+              | Parte {currentPartIndex + 1} de {storyParts.length}
+            </span>
+          )}
         </div>
       </div>
 
       <div className="story-content">
-        {formatStory(story?.story || '')}
+        {formatStory(displayStory)}
       </div>
 
-      {story?.acts && story.acts.length > 0 && (
+      {story?.acts && story.acts.length > 0 && !storyParts && (
         <div className="acts-section">
           <h4>Atos</h4>
           <div className="act-list">
@@ -93,7 +118,13 @@ const StoryDisplay = ({ story, isLoading, anime, protagonists, mode }: StoryDisp
         </div>
       )}
 
-      <div style={{ 
+      {currentPart?.actNumber && (
+        <div className="acts-section">
+          <h4>Ato {currentPart.actNumber}</h4>
+        </div>
+      )}
+
+      <div style={{
         marginTop: '30px', 
         paddingTop: '20px', 
         borderTop: '1px solid var(--border)',

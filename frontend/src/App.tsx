@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Anime, Protagonist, StoryMode, ModelType, StoryRequest, StoryResponse } from './types';
+import { Anime, Protagonist, StoryMode, ModelType, StoryRequest, StoryResponse, StoryPart } from './types';
 import AnimeSearch from './components/AnimeSearch';
 import ProtagonistList from './components/ProtagonistList';
 import StoryOptions from './components/StoryOptions';
 import StoryDisplay from './components/StoryDisplay';
+import StoryNavigation from './components/StoryNavigation';
 import WarningOverlay from './components/WarningOverlay';
 import AddProtagonistModal from './components/AddProtagonistModal';
 
@@ -14,8 +15,10 @@ const App = () => {
   const [storyMode, setStoryMode] = useState<StoryMode>('original');
   const [selectedModel, setSelectedModel] = useState<ModelType>('mimo-v2.6-flash:free');
   const [includeActs, setIncludeActs] = useState(false);
-  const [story, setStory] = useState<StoryResponse | null>(null);
+  const [storyParts, setStoryParts] = useState<StoryPart[]>([]);
+  const [currentPartIndex, setCurrentPartIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+  const [isContinuing, setIsContinuing] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [availableModels, setAvailableModels] = useState<ModelType[]>([]);
@@ -51,7 +54,7 @@ const App = () => {
     setProtagonists(protagonists.filter(p => p.id !== id));
   };
 
-  const handleGenerateStory = async () => {
+  const handleGenerateStory = async (continueStory: boolean = false) => {
     if (!selectedAnime) {
       setError('Selecione um anime primeiro');
       return;
@@ -71,7 +74,9 @@ const App = () => {
         protagonists,
         mode: storyMode,
         model: selectedModel,
-        includeActs: includeActs && storyMode === 'adult'
+        includeActs: includeActs && storyMode === 'adult',
+        previousParts: continueStory ? storyParts : undefined,
+        continueStory: continueStory
       };
 
       const response = await fetch('/api/story/generate', {
@@ -87,15 +92,54 @@ const App = () => {
       }
 
       const data: StoryResponse = await response.json();
-      setStory(data);
+      
+      if (continueStory) {
+        // Adicionar nova parte à lista
+        const newPart: StoryPart = {
+          id: Date.now().toString(),
+          content: data.story,
+          isAdult: storyMode === 'adult',
+          actNumber: storyParts.length + 1
+        };
+        setStoryParts([...storyParts, newPart]);
+        setCurrentPartIndex(storyParts.length);
+      } else {
+        // Nova história
+        const firstPart: StoryPart = {
+          id: Date.now().toString(),
+          content: data.story,
+          isAdult: storyMode === 'adult',
+          actNumber: 1
+        };
+        setStoryParts([firstPart]);
+        setCurrentPartIndex(0);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro desconhecido');
     } finally {
       setIsLoading(false);
+      setIsContinuing(false);
+    }
+  };
+
+  const handleNextPart = () => {
+    if (currentPartIndex < storyParts.length - 1) {
+      setCurrentPartIndex(currentPartIndex + 1);
+    } else {
+      // Gerar próxima parte
+      setIsContinuing(true);
+      handleGenerateStory(true);
+    }
+  };
+
+  const handlePreviousPart = () => {
+    if (currentPartIndex > 0) {
+      setCurrentPartIndex(currentPartIndex - 1);
     }
   };
 
   const canGenerate = selectedAnime && protagonists.length > 0 && !isLoading;
+  const hasMore = currentPartIndex >= storyParts.length - 1;
 
   return (
     <div className="app-container">
@@ -139,7 +183,7 @@ const App = () => {
           
           <button
             className="generate-btn"
-            onClick={handleGenerateStory}
+            onClick={() => handleGenerateStory(false)}
             disabled={!canGenerate || isLoading}
           >
             {isLoading ? 'Gerando...' : 'Gerar História'}
@@ -177,12 +221,25 @@ const App = () => {
           </div>
           
           <StoryDisplay
-            story={story}
+            story={storyParts.length > 0 ? { story: storyParts[currentPartIndex]?.content || '' } : null}
             isLoading={isLoading}
             anime={selectedAnime}
             protagonists={protagonists}
             mode={storyMode}
+            storyParts={storyParts}
+            currentPartIndex={currentPartIndex}
           />
+          
+          {storyParts.length > 0 && (
+            <StoryNavigation
+              currentPartIndex={currentPartIndex}
+              totalParts={storyParts.length}
+              onNext={handleNextPart}
+              onPrevious={handlePreviousPart}
+              isLoading={isLoading || isContinuing}
+              hasMore={hasMore}
+            />
+          )}
         </main>
       </div>
     </div>

@@ -41,6 +41,13 @@ export interface Protagonist {
   personality: string;
 }
 
+export interface StoryPart {
+  id: string;
+  content: string;
+  isAdult?: boolean;
+  actNumber?: number;
+}
+
 export type StoryMode = 'original' | 'comedy' | 'adult';
 export type ModelType = 'mimo-v2.6-flash:free' | 'deepseek-v4.1-flash:free';
 
@@ -50,6 +57,8 @@ export interface StoryRequest {
   mode: StoryMode;
   model: ModelType;
   includeActs?: boolean;
+  previousParts?: StoryPart[];
+  continueStory?: boolean;
 }
 
 export interface StoryResponse {
