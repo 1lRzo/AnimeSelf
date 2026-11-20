@@ -48,24 +48,36 @@ export interface StoryPart {
   actNumber?: number;
 }
 
-// Lista de modelos gratuitos disponíveis
-export type ModelType = 
-  | 'mimo-v2.6-flash:free'
-  | 'deepseek-v4.1-flash:free'
-  | 'lms-sk-X384l750YhR1-yOSnua9NnTM4_H8EU7dRo3WCMB7X0Q'  // LM Studio
-  | 'mistral-7b-instruct'
-  | 'llama-2-7b-chat'
-  | 'phi-2'
-  | string;  // Permite modelos customizados
+// Lista de modelos gratuitos por provedor
+export const FREE_MODELS = {
+  mistral: [
+    'mimo-v2.6-flash:free',
+    'deepseek-v4.1-flash:free'
+  ],
+  lmstudio: [
+    'lms-sk-X384l750YhR1-yOSnua9NnTM4_H8EU7dRo3WCMB7X0Q'
+  ],
+  huggingface: [
+    'NousResearch/Llama-2-7b-chat',
+    'mistralai/Mistral-7B-Instruct-v0.1',
+    'microsoft/Phi-3-mini-4k-instruct',
+    'google/gemma-7b-it'
+  ],
+  openrouter: [
+    'llama-2-7b-chat',
+    'phi-2'
+  ]
+};
 
-export const FREE_MODELS: ModelType[] = [
-  'mimo-v2.6-flash:free',
-  'deepseek-v4.1-flash:free',
-  'lms-sk-X384l750YhR1-yOSnua9NnTM4_H8EU7dRo3WCMB7X0Q',
-  'mistral-7b-instruct',
-  'llama-2-7b-chat',
-  'phi-2'
+// Todos os modelos gratuitos
+export const ALL_FREE_MODELS = [
+  ...FREE_MODELS.mistral,
+  ...FREE_MODELS.lmstudio,
+  ...FREE_MODELS.huggingface,
+  ...FREE_MODELS.openrouter
 ];
+
+export type ModelType = typeof ALL_FREE_MODELS[number] | string;
 
 export type StoryMode = 'original' | 'comedy' | 'adult';
 

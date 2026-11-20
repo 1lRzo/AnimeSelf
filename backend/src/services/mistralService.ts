@@ -3,6 +3,7 @@ import { StoryRequest, StoryResponse, ModelType, StoryPart, FREE_MODELS } from '
 import { CONFIG } from '../config';
 
 const API_KEY = CONFIG.mistralApiKey;
+const HUGGINGFACE_API_KEY = process.env.HUGGINGFACE_API_KEY || '';
 
 // Clientes para diferentes provedores
 const mistralClient = new Mistral({ apiKey: API_KEY });
@@ -17,7 +18,13 @@ const MODEL_PROVIDERS: Record<string, string> = {
   // LM Studio (local)
   'lms-sk-X384l750YhR1-yOSnua9NnTM4_H8EU7dRo3WCMB7X0Q': 'lmstudio',
   
-  // Outros modelos
+  // Hugging Face
+  'NousResearch/Llama-2-7b-chat': 'huggingface',
+  'mistralai/Mistral-7B-Instruct-v0.1': 'huggingface',
+  'microsoft/Phi-3-mini-4k-instruct': 'huggingface',
+  'google/gemma-7b-it': 'huggingface',
+  
+  // OpenRouter
   'llama-2-7b-chat': 'openrouter',
   'phi-2': 'openrouter'
 };
@@ -32,11 +39,15 @@ const getModelConfig = (model: ModelType) => {
         temperature: model.includes('adult') || model.includes('deepseek') ? 0.8 : 0.7
       };
     case 'lmstudio':
-      // LM Studio usa API local
       return {
         model: model,
         temperature: 0.8,
-        baseUrl: 'http://localhost:1234/v1'  // URL padrão do LM Studio
+        baseUrl: 'http://localhost:1234/v1'
+      };
+    case 'huggingface':
+      return {
+        model: model,
+        temperature: 0.8
       };
     case 'openrouter':
       return {
@@ -227,6 +238,33 @@ Instrução: Reescreva a história do anime incluindo todos os novos protagonist
       
       const data = await response.json();
       const story = data.choices?.[0]?.message?.content || data.choices?.[0]?.text || '';
+      return { story };
+    }
+    // Para Hugging Face
+    else if (provider === 'huggingface') {
+      const response = await fetch(`https://api-inference.huggingface.co/models/${model}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${HUGGINGFACE_API_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          inputs: userPrompt,
+          parameters: {
+            temperature: modelConfig.temperature,
+            max_new_tokens: 1000
+          }
+        })
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`Hugging Face API error: ${errorData.error || response.statusText}`);
+      }
+      
+      const data = await response.json();
+      // Hugging Face retorna o texto em data[0].generated_text
+      const story = data[0]?.generated_text || data.generated_text || '';
       return { story };
     }
     // Para OpenRouter

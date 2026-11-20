@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Anime, Protagonist, StoryMode, ModelType, StoryRequest, StoryResponse, StoryPart, FREE_MODELS } from './types';
+import { Anime, Protagonist, StoryMode, ModelType, StoryRequest, StoryResponse, StoryPart, ALL_FREE_MODELS } from './types';
 import AnimeSearch from './components/AnimeSearch';
 import ProtagonistList from './components/ProtagonistList';
 import StoryOptions from './components/StoryOptions';
@@ -21,16 +21,16 @@ const App = () => {
   const [isContinuing, setIsContinuing] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [availableModels, setAvailableModels] = useState<ModelType[]>(FREE_MODELS);
+  const [availableModels, setAvailableModels] = useState<ModelType[]>(ALL_FREE_MODELS);
 
   useEffect(() => {
     const fetchModels = async () => {
       try {
         const response = await fetch('/api/story/models');
         const data = await response.json();
-        setAvailableModels(data.models || FREE_MODELS);
+        setAvailableModels(data.models || ALL_FREE_MODELS);
       } catch (err) {
-        setAvailableModels(FREE_MODELS);
+        setAvailableModels(ALL_FREE_MODELS);
       }
     };
     fetchModels();
